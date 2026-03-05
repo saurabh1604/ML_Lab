@@ -168,8 +168,9 @@ predictions = model.predict(X_test)
                 st.write(f"**Accuracy:** {acc * 100:.2f}%")
 
                 # Confusion Matrix
-                cm = confusion_matrix(st.session_state["y_test"], predictions)
-                classes = np.unique(st.session_state["y_test"])
+                # Get all possible classes the model knows about to ensure matrix size matches labels
+                classes = model.classes_
+                cm = confusion_matrix(st.session_state["y_test"], predictions, labels=classes)
 
                 fig = px.imshow(cm, text_auto=True,
                                 x=classes, y=classes,
