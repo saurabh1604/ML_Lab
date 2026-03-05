@@ -12,53 +12,129 @@ def main():
         initial_sidebar_state="expanded"
     )
 
-    # Inject custom CSS for a polished, production-grade UI
+    # Inject deeply custom, production-grade CSS for a sleek, corporate ML dashboard look
     st.markdown("""
         <style>
-        /* Typography and general styling */
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        /* Global Backgrounds */
+        .stApp {
+            background-color: #f8fafc; /* Very light slate for main body */
         }
-        h1, h2, h3 {
+        section[data-testid="stSidebar"] {
+            background-color: #ffffff;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        /* Typography */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        html, body, [class*="css"] {
+            font-family: 'Inter', sans-serif;
+        }
+        h1 {
+            color: #0f172a;
+            font-weight: 700;
+            letter-spacing: -0.05em;
+            margin-bottom: 1.5rem !important;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        h2 {
+            color: #1e293b;
             font-weight: 600;
-            color: #111827;
             letter-spacing: -0.025em;
+            margin-top: 2rem !important;
         }
+        h3 {
+            color: #334155;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        p, li {
+            color: #475569;
+            line-height: 1.6;
+        }
+
+        /* Containers (Cards) */
+        div[data-testid="stVerticalBlock"] > div[style*="flex-direction: column"] {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            margin-bottom: 1rem;
+        }
+
         /* Buttons */
         .stButton>button {
-            border-radius: 6px;
-            font-weight: 500;
-            transition: all 0.2s ease-in-out;
-            border: 1px solid #d1d5db;
-            background-color: white;
-            color: #374151;
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s ease;
+            border: 1px solid #cbd5e1;
+            background-color: #ffffff;
+            color: #0f172a;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         }
         .stButton>button:hover {
-            border-color: #9ca3af;
-            color: #111827;
+            border-color: #94a3b8;
+            background-color: #f8fafc;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
+
         /* Primary Buttons */
-        .stButton>button[data-baseweb="button"]:last-child {
-            /* Targeting primary visually if needed, though Streamlit handles type="primary" */
+        .stButton>button[data-baseweb="button"] {
+            /* Handled dynamically by Streamlit for type="primary" */
         }
-        /* Alerts / Info boxes */
-        .stAlert {
-            border-radius: 8px;
-            border: none;
-            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        div[data-testid="stButton"] > button[kind="primary"] {
+            background-color: #2563eb !important;
+            color: white !important;
+            border: none !important;
         }
+        div[data-testid="stButton"] > button[kind="primary"]:hover {
+            background-color: #1d4ed8 !important;
+        }
+
+        /* Metrics */
+        div[data-testid="stMetricValue"] {
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 2.25rem;
+        }
+        div[data-testid="stMetricLabel"] {
+            color: #64748b;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.875rem;
+        }
+
         /* Code blocks */
         .stCodeBlock {
             border-radius: 8px;
             overflow: hidden;
-            border: 1px solid #e5e7eb;
+            border: 1px solid #e2e8f0;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
         }
+
         /* Expanders */
         .streamlit-expanderHeader {
             font-weight: 600;
-            color: #374151;
-            background-color: #f9fafb;
-            border-radius: 6px;
+            color: #1e293b;
+            background-color: #f1f5f9;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Sidebar Nav Styling */
+        .stRadio > div[role="radiogroup"] > label {
+            background-color: transparent !important;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.25rem;
+            transition: background-color 0.2s;
+        }
+        .stRadio > div[role="radiogroup"] > label:hover {
+            background-color: #f1f5f9 !important;
         }
         </style>
     """, unsafe_allow_html=True)

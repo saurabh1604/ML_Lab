@@ -49,11 +49,12 @@ def show_data_ingestion():
     **Data Ingestion** is the very first step of any Machine Learning pipeline. This is where we load our raw data from a source (like a CSV file, a database, or an API) into our programming environment so we can begin exploring it.
     """)
 
-    st.header("Select a Dataset")
-    dataset_name = st.selectbox(
-        "Choose a dataset to explore:",
-        ["Select a Dataset...", "Ames Housing (Regression)", "Breast Cancer (Classification)"]
-    )
+    with st.container(border=True):
+        st.header("Select a Dataset")
+        dataset_name = st.selectbox(
+            "Choose a dataset to explore:",
+            ["Select a Dataset...", "Ames Housing (Regression)", "Breast Cancer (Classification)"]
+        )
 
     if dataset_name != "Select a Dataset...":
         df, target_col, problem_type = load_data(dataset_name)
@@ -67,14 +68,23 @@ def show_data_ingestion():
 
         st.success(f"Successfully loaded the **{dataset_name}** dataset.")
 
+        # Quick Overview Metrics
+        st.markdown("### Dataset Overview")
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Rows", f"{df.shape[0]:,}")
+        m2.metric("Columns", f"{df.shape[1]}")
+        m3.metric("Target Variable", target_col)
+        m4.metric("Problem Type", problem_type.title())
+
         st.header("View the Raw Data")
 
         col1, col2 = st.columns([1, 1])
 
         with col1:
-            st.markdown("### Python Source Code")
-            st.markdown("Here is the Python code using the `pandas` library to load and inspect our dataset.")
-            code = '''import pandas as pd
+            with st.container(border=True):
+                st.markdown("### Python Source Code")
+                st.markdown("Here is the Python code using the `pandas` library to load and inspect our dataset.")
+                code = '''import pandas as pd
 
 # Load the dataset
 df = pd.read_csv("dataset.csv")
@@ -84,30 +94,31 @@ print(df.head())
 
 # Get the shape of the dataset (rows, columns)
 print(df.shape)'''
-            st.code(code, language='python')
+                st.code(code, language='python')
 
         with col2:
-            st.markdown("### Visual Output")
-            st.write(f"**Dataset Shape:** {df.shape[0]} rows and {df.shape[1]} columns")
-            st.dataframe(df.head(10), use_container_width=True)
+            with st.container(border=True):
+                st.markdown("### Visual Output")
+                st.dataframe(df.head(10), use_container_width=True)
 
         st.markdown("---")
         st.header("Exploratory Data Analysis (EDA)")
         st.markdown(f"The target variable we are trying to predict is **`{target_col}`**.")
 
-        col3, col4 = st.columns([1, 1])
+        with st.container(border=True):
+            col3, col4 = st.columns([1, 1])
 
-        with col3:
-            st.markdown("### Code: Analyzing the Target")
-            if problem_type == "regression":
-                eda_code = f'''import plotly.express as px
+            with col3:
+                st.markdown("### Code: Analyzing the Target")
+                if problem_type == "regression":
+                    eda_code = f'''import plotly.express as px
 
 # Create a histogram to see the distribution of the target variable
 fig = px.histogram(df, x="{target_col}",
                    title="Distribution of {target_col}")
 fig.show()'''
-            else:
-                eda_code = f'''import plotly.express as px
+                else:
+                    eda_code = f'''import plotly.express as px
 
 # Create a bar chart to see the class balance
 class_counts = df["{target_col}"].value_counts().reset_index()
@@ -115,21 +126,21 @@ fig = px.bar(class_counts, x="{target_col}", y="count",
              title="Class Balance of {target_col}",
              color="{target_col}")
 fig.show()'''
-            st.code(eda_code, language='python')
+                st.code(eda_code, language='python')
 
-        with col4:
-            st.markdown("### Visual Output")
-            if problem_type == "regression":
-                fig = px.histogram(df, x=target_col, title=f"Distribution of {target_col}", nbins=50,
-                                   color_discrete_sequence=['#3b82f6'])
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                class_counts = df[target_col].value_counts().reset_index()
-                class_counts.columns = [target_col, 'count']
-                fig = px.bar(class_counts, x=target_col, y='count', color=target_col,
-                             title=f"Class Balance of {target_col}",
-                             color_discrete_sequence=['#3b82f6', '#10b981', '#f59e0b'])
-                st.plotly_chart(fig, use_container_width=True)
+            with col4:
+                st.markdown("### Visual Output")
+                if problem_type == "regression":
+                    fig = px.histogram(df, x=target_col, title=f"Distribution of {target_col}", nbins=50,
+                                       color_discrete_sequence=['#3b82f6'])
+                    st.plotly_chart(fig, use_container_width=True)
+                else:
+                    class_counts = df[target_col].value_counts().reset_index()
+                    class_counts.columns = [target_col, 'count']
+                    fig = px.bar(class_counts, x=target_col, y='count', color=target_col,
+                                 title=f"Class Balance of {target_col}",
+                                 color_discrete_sequence=['#3b82f6', '#10b981', '#f59e0b'])
+                    st.plotly_chart(fig, use_container_width=True)
 
         st.markdown("---")
         st.header("Advanced Exploratory Data Analysis")
