@@ -11,10 +11,10 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, confusion_matrix, roc_curve, auc
 
 def show_modeling():
-    st.title("🧠 Step 3: Modeling")
+    st.title("Step 3: Modeling")
 
     if st.session_state.get("processed_data") is None:
-        st.warning("⚠️ Please complete **2. Pre-processing & Feature Eng** first to prepare the data for modeling.")
+        st.warning("Please complete Pre-processing & Feature Engineering first to prepare the data for modeling.")
         return
 
     df = st.session_state["processed_data"]
@@ -25,8 +25,8 @@ def show_modeling():
     **Modeling** is the core of Machine Learning. It's where an algorithm learns patterns from the historical data (features) to predict the outcome (target).
     """)
 
-    # 1. Train/Test Split
-    st.header("1. Train/Test Split")
+    # Train/Test Split
+    st.header("Train/Test Split")
     st.markdown("We can't evaluate our model on the exact same data it learned from (it could just memorize the answers!). Instead, we split the data into a **Training Set** (to learn from) and a **Testing Set** (to evaluate performance on unseen data).")
 
     test_size = st.slider("Select Test Size (Percentage)", min_value=10, max_value=50, value=20, step=5)
@@ -66,15 +66,15 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size={test_size/1
         st.session_state["y_train"] = y_train
         st.session_state["y_test"] = y_test
 
-        st.success(f"✅ Data split successfully! Training Size: {X_train.shape[0]} rows. Testing Size: {X_test.shape[0]} rows.")
+        st.success(f"Data split successfully! Training Size: {X_train.shape[0]} rows. Testing Size: {X_test.shape[0]} rows.")
 
     st.markdown("---")
 
-    # 2. Select and Train Model
-    st.header("2. Model Selection & Training")
+    # Select and Train Model
+    st.header("Model Selection & Training")
 
     if st.session_state.get("X_train") is None:
-        st.info("👆 Please click **Perform Split** above before training a model.")
+        st.info("Please click Perform Split above before training a model.")
         return
 
     if problem_type == "regression":
@@ -138,10 +138,10 @@ predictions = model.predict(X_test)
             st.session_state["model"] = model
             st.session_state["model_name"] = selected_model_name
 
-            st.success(f"🎉 **{selected_model_name}** trained successfully!")
+            st.success(f"**{selected_model_name}** trained successfully.")
 
             # Evaluation Metrics
-            st.markdown("### 📊 Evaluation Metrics")
+            st.markdown("### Evaluation Metrics")
             if problem_type == "regression":
                 mse = mean_squared_error(st.session_state["y_test"], predictions)
                 r2 = r2_score(st.session_state["y_test"], predictions)
@@ -191,4 +191,24 @@ predictions = model.predict(X_test)
                     fig2.update_layout(yaxis={'categoryorder':'total ascending'})
                     st.plotly_chart(fig2, use_container_width=True)
 
-            st.info("The model is trained and saved! Proceed to **4. Deployment** to make live predictions on new data.")
+            st.info("The model is trained and saved! Proceed to **Deployment** to make live predictions on new data.")
+
+    st.markdown("---")
+    with st.expander("Test Your Understanding"):
+        st.markdown("### Conceptual Question")
+        q3 = st.radio(
+            "What is the primary purpose of splitting our data into a Training Set and a Testing Set?",
+            options=[
+                "A) To make the dataset smaller so the model trains faster.",
+                "B) To have a separate dataset to deploy the model on.",
+                "C) To evaluate how well the model generalizes to new, unseen data, rather than just memorizing the training data.",
+                "D) To use different algorithms on different parts of the data."
+            ],
+            index=None,
+            key="modeling_quiz"
+        )
+        if q3:
+            if q3.startswith("C"):
+                st.success("Correct! If we test on the same data we train on, we might suffer from 'overfitting' (memorization). The test set proves the model actually learned patterns.")
+            else:
+                st.error("Not quite. The testing set is strictly used to evaluate the model's performance on data it has never seen before.")

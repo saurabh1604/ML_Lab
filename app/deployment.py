@@ -3,10 +3,10 @@ import pandas as pd
 import numpy as np
 
 def show_deployment():
-    st.title("🚀 Step 4: Deployment")
+    st.title("Step 4: Deployment")
 
     if st.session_state.get("model") is None:
-        st.warning("⚠️ Please complete **3. Modeling** and train a model first.")
+        st.warning("Please complete Modeling and train a model first.")
         return
 
     model = st.session_state["model"]
@@ -26,7 +26,7 @@ def show_deployment():
     Use the interactive widgets below to input new data for prediction.
     """)
 
-    st.header(f"🔮 Live Prediction: {model_name}")
+    st.header(f"Live Prediction: {model_name}")
 
     # Create input widgets based on the RAW data columns
     # We want the user to input data in its natural, unscaled format.
@@ -35,7 +35,7 @@ def show_deployment():
     # Determine which columns we need to ask for
     input_features = [col for col in raw_df.columns if col != target_col]
 
-    st.markdown("### 📝 Enter New Data Points:")
+    st.markdown("### Enter New Data Points:")
 
     # Create rows of 3 columns to organize widgets
     cols = st.columns(3)
@@ -89,7 +89,7 @@ print("Prediction:", prediction[0])
     with col2:
         st.markdown("### Real-time Prediction Output")
 
-        if st.button("🔮 Make Prediction", type="primary", use_container_width=True):
+        if st.button("Make Prediction", type="primary", use_container_width=True):
 
             # Convert user inputs to DataFrame
             input_df = pd.DataFrame([user_inputs])
@@ -116,11 +116,10 @@ print("Prediction:", prediction[0])
             # 3. Predict
             prediction = model.predict(input_processed)[0]
 
-            st.markdown("### 🎯 Result:")
+            st.markdown("### Result:")
             if problem_type == "regression":
                 # Assuming price or similar
                 st.success(f"## {prediction:,.2f}")
-                st.balloons()
             else:
                 # Classification diagnosis
                 if isinstance(prediction, (int, np.integer)):
@@ -142,5 +141,22 @@ print("Prediction:", prediction[0])
                     })
                     st.dataframe(prob_df, hide_index=True)
 
-                    if max(probs) > 0.8:
-                        st.balloons()
+    st.markdown("---")
+    with st.expander("Test Your Understanding"):
+        st.markdown("### Conceptual Question")
+        q4 = st.radio(
+            "During deployment (making a prediction on new user data), what must we ensure happens to the new data?",
+            options=[
+                "A) We must apply the exact same pre-processing pipeline (imputation, encoding, scaling) that the model was trained on.",
+                "B) We should send the raw, unscaled data directly into the model to avoid changing the user's input.",
+                "C) We must retrain the model on the new data instantly before predicting.",
+                "D) We must split the new data into a train and test set."
+            ],
+            index=None,
+            key="deployment_quiz"
+        )
+        if q4:
+            if q4.startswith("A"):
+                st.success("Correct! The model mathematically expects inputs in the exact same format and scale it learned from. Failing to apply the pipeline will cause errors or wildly incorrect predictions.")
+            else:
+                st.error("Not quite. The model learned on transformed data. If we feed it raw data, it won't understand it.")

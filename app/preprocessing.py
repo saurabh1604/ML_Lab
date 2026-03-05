@@ -6,10 +6,10 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 
 def show_preprocessing():
-    st.title("🛠️ Step 2: Pre-processing & Feature Engineering")
+    st.title("Step 2: Pre-processing & Feature Engineering")
 
     if st.session_state["raw_data"] is None:
-        st.warning("⚠️ Please go to **1. Data Ingestion** and select a dataset first.")
+        st.warning("Please go to Data Ingestion and select a dataset first.")
         return
 
     df = st.session_state["raw_data"].copy()
@@ -19,8 +19,8 @@ def show_preprocessing():
     **Pre-processing and Feature Engineering** involves cleaning our data and transforming it into a format that a Machine Learning model can understand. This often includes handling missing values, scaling numbers so they are comparable, and encoding text/categories into numbers.
     """)
 
-    # 1. Handling Missing Values
-    st.header("1. Handling Missing Values")
+    # Handling Missing Values
+    st.header("Handling Missing Values")
     st.markdown("Real-world data is messy. It often contains gaps or 'Null' values. Let's see if we have any, and if not, let's artificially introduce some for learning purposes!")
 
     # Check for missing values
@@ -64,25 +64,34 @@ df['{missing_df.iloc[0]['Column']}'] = imputer.fit_transform(df[['{missing_df.il
 
     with col2:
         st.markdown("### Visual Output")
-        st.write("Columns with missing data before imputation:")
-        st.dataframe(missing_df, use_container_width=True)
+        fig_missing = px.bar(missing_df, x='Column', y='Missing Count',
+                             title="Missing Values Count (Before Imputation)",
+                             color_discrete_sequence=['#ef4444'])
+        st.plotly_chart(fig_missing, use_container_width=True)
 
         if st.button("Apply Missing Value Imputation"):
             imputer = SimpleImputer(strategy='mean')
             for col in missing_df['Column']:
                 if df[col].dtype in ['float64', 'int64']:
                     df[col] = imputer.fit_transform(df[[col]])
-            st.success("Missing values imputed successfully using the mean!")
+            st.success("Missing values imputed successfully using the mean.")
 
             # Show that there are no more missing values
-            st.write("Columns with missing data after imputation:")
-            new_missing = pd.DataFrame({'Missing Count': df.isnull().sum()})
-            st.dataframe(new_missing[new_missing['Missing Count'] > 0], use_container_width=True)
+            new_missing = pd.DataFrame({'Column': df.columns, 'Missing Count': df.isnull().sum()})
+            new_missing = new_missing[new_missing['Missing Count'] > 0]
+
+            if new_missing.empty:
+                st.info("No more missing values remaining.")
+            else:
+                fig_missing_after = px.bar(new_missing, x='Column', y='Missing Count',
+                                     title="Missing Values Count (After Imputation)",
+                                     color_discrete_sequence=['#10b981'])
+                st.plotly_chart(fig_missing_after, use_container_width=True)
 
     st.markdown("---")
 
-    # 2. Categorical Encoding
-    st.header("2. Encoding Categorical Variables (One-Hot Encoding)")
+    # Categorical Encoding
+    st.header("Encoding Categorical Variables (One-Hot Encoding)")
     st.markdown("Machine learning models require numbers, not text. We use **One-Hot Encoding** to convert categorical text columns into multiple binary (0 or 1) columns.")
 
     cat_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
@@ -117,7 +126,7 @@ df = pd.get_dummies(df, columns=['{selected_cat}'], drop_first=True)
 
             if st.button("Apply One-Hot Encoding"):
                 df = pd.get_dummies(df, columns=[selected_cat], drop_first=True)
-                st.success(f"Column '{selected_cat}' has been one-hot encoded!")
+                st.success(f"Column '{selected_cat}' has been one-hot encoded.")
 
                 # Show new columns
                 new_cols = [c for c in df.columns if selected_cat in c]
@@ -126,8 +135,8 @@ df = pd.get_dummies(df, columns=['{selected_cat}'], drop_first=True)
 
     st.markdown("---")
 
-    # 3. Feature Scaling
-    st.header("3. Feature Scaling (Standardization)")
+    # Feature Scaling
+    st.header("Feature Scaling (Standardization)")
     st.markdown("Features often have different scales (e.g., Age ranges from 0-100, while Salary ranges from 30,000-200,000). Many ML algorithms perform better when all numerical features are scaled to have a similar range. **Standardization** shifts the data to have a mean of 0 and standard deviation of 1.")
 
     num_cols = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
@@ -163,18 +172,21 @@ df['{selected_num}_scaled'] = scaler.fit_transform(df[['{selected_num}']])
                 scaler = StandardScaler()
                 scaled_vals = scaler.fit_transform(df[[selected_num]])
                 df[f'{selected_num}_scaled'] = scaled_vals
-                st.success(f"Column '{selected_num}' has been scaled!")
+                st.success(f"Column '{selected_num}' has been scaled.")
 
                 # After scaling
-                fig2 = px.histogram(df, x=f'{selected_num}_scaled', title=f"Distribution of {selected_num} (After Scaling)", nbins=30, color_discrete_sequence=['green'])
+                fig2 = px.histogram(df, x=f'{selected_num}_scaled', title=f"Distribution of {selected_num} (After Scaling)", nbins=30, color_discrete_sequence=['#10b981'])
                 st.plotly_chart(fig2, use_container_width=True)
 
     st.markdown("---")
 
-    st.header("Save Pre-processed Data")
-    st.write("Once we have fully applied our pre-processing pipeline to the entire dataset, we save it for modeling.")
+    st.header("Apply and Finalize Full Pipeline")
+    st.markdown("""
+        In real Machine Learning projects, we build automated pipelines that perform **all** the above steps simultaneously on the entire dataset.
+        Click the button below to cleanly apply Imputation, Encoding, and Scaling across all features instantly to prepare the data for Modeling.
+    """)
 
-    if st.button("Finalize All Pre-processing Pipeline"):
+    if st.button("Finalize All Pre-processing Pipeline", type="primary", use_container_width=True):
         # Auto-apply all transformations for the rest of the app seamlessly
         final_df = st.session_state["raw_data"].copy()
 
@@ -207,5 +219,24 @@ df['{selected_num}_scaled'] = scaler.fit_transform(df[['{selected_num}']])
         features_after_encode = [c for c in final_df.columns if c != target_col]
         st.session_state["encoded_columns"] = features_after_encode
 
-        st.success("✅ Pre-processing Pipeline Applied! The cleaned data is now ready for the **Modeling** phase.")
+        st.success("Pre-processing Pipeline Applied. The cleaned data is now ready for the **Modeling** phase.")
         st.dataframe(final_df.head(), use_container_width=True)
+
+    st.markdown("---")
+    with st.expander("Test Your Understanding"):
+        st.markdown("### Conceptual Question")
+        q2 = st.radio(
+            "Why do we use One-Hot Encoding for categorical features rather than just assigning a number to each category (e.g., Apple=1, Banana=2, Orange=3)?",
+            options=[
+                "A) Because computers only understand 1s and 0s.",
+                "B) To avoid implying a mathematical or ordinal relationship (like Banana is 'greater' than Apple) where none exists.",
+                "C) It reduces the number of columns in the dataset.",
+                "D) Models automatically assume any text column is categorical, so we don't strictly need to encode it."
+            ],
+            index=None
+        )
+        if q2:
+            if q2.startswith("B"):
+                st.success("Correct! Label encoding assigns arbitrary numerical order, confusing the algorithm. One-Hot encoding treats them independently.")
+            else:
+                st.error("Not quite. The primary reason is to prevent the model from misinterpreting arbitrary numbers as ordered values.")

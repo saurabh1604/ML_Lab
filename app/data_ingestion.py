@@ -43,13 +43,13 @@ def load_data(dataset_name):
         return df, target_col, problem_type
 
 def show_data_ingestion():
-    st.title("📥 Step 1: Data Ingestion")
+    st.title("Step 1: Data Ingestion")
 
     st.markdown("""
     **Data Ingestion** is the very first step of any Machine Learning pipeline. This is where we load our raw data from a source (like a CSV file, a database, or an API) into our programming environment so we can begin exploring it.
     """)
 
-    st.header("1. Select a Dataset")
+    st.header("Select a Dataset")
     dataset_name = st.selectbox(
         "Choose a dataset to explore:",
         ["Select a Dataset...", "Ames Housing (Regression)", "Breast Cancer (Classification)"]
@@ -65,14 +65,14 @@ def show_data_ingestion():
         st.session_state["problem_type"] = problem_type
         st.session_state["features"] = [col for col in df.columns if col != target_col]
 
-        st.success(f"Successfully loaded the **{dataset_name}** dataset!")
+        st.success(f"Successfully loaded the **{dataset_name}** dataset.")
 
-        st.header("2. View the Raw Data")
+        st.header("View the Raw Data")
 
         col1, col2 = st.columns([1, 1])
 
         with col1:
-            st.markdown("### Python Code")
+            st.markdown("### Python Source Code")
             st.markdown("Here is the Python code using the `pandas` library to load and inspect our dataset.")
             code = '''import pandas as pd
 
@@ -91,7 +91,8 @@ print(df.shape)'''
             st.write(f"**Dataset Shape:** {df.shape[0]} rows and {df.shape[1]} columns")
             st.dataframe(df.head(10), use_container_width=True)
 
-        st.header("3. Basic Exploratory Data Analysis (EDA)")
+        st.markdown("---")
+        st.header("Exploratory Data Analysis (EDA)")
         st.markdown(f"The target variable we are trying to predict is **`{target_col}`**.")
 
         col3, col4 = st.columns([1, 1])
@@ -119,13 +120,69 @@ fig.show()'''
         with col4:
             st.markdown("### Visual Output")
             if problem_type == "regression":
-                fig = px.histogram(df, x=target_col, title=f"Distribution of {target_col}", nbins=50)
+                fig = px.histogram(df, x=target_col, title=f"Distribution of {target_col}", nbins=50,
+                                   color_discrete_sequence=['#3b82f6'])
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 class_counts = df[target_col].value_counts().reset_index()
                 class_counts.columns = [target_col, 'count']
                 fig = px.bar(class_counts, x=target_col, y='count', color=target_col,
-                             title=f"Class Balance of {target_col}")
+                             title=f"Class Balance of {target_col}",
+                             color_discrete_sequence=['#3b82f6', '#10b981', '#f59e0b'])
                 st.plotly_chart(fig, use_container_width=True)
 
-        st.info("💡 **Tip**: In regression, we want to predict a continuous number (like price). In classification, we predict a category (like Benign or Malignant). Now that our data is loaded, let's move on to Step 2: Pre-processing & Feature Engineering!")
+        st.markdown("---")
+        st.header("Advanced Exploratory Data Analysis")
+        st.markdown("Understanding relationships between features is crucial. Let's explore correlations and distributions.")
+
+        tab1, tab2 = st.tabs(["Correlation Heatmap", "Feature Distributions"])
+
+        with tab1:
+            st.markdown("A **Correlation Heatmap** shows how strongly numerical features are related to one another. Values close to 1 or -1 indicate a strong relationship, while values near 0 indicate weak or no relationship.")
+            num_df = df.select_dtypes(include=['float64', 'int64'])
+            if not num_df.empty:
+                corr = num_df.corr()
+                fig_corr = px.imshow(corr, text_auto=".2f", aspect="auto",
+                                     color_continuous_scale='RdBu_r',
+                                     title="Feature Correlation Heatmap")
+                st.plotly_chart(fig_corr, use_container_width=True)
+            else:
+                st.info("No numerical features available for correlation.")
+
+        with tab2:
+            st.markdown("A **Box Plot** helps visualize the distribution of a numerical feature and identify potential outliers.")
+            num_cols = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
+            if num_cols:
+                selected_feature = st.selectbox("Select a feature to visualize:", num_cols, key="eda_boxplot_feat")
+                if problem_type == "classification":
+                    fig_box = px.box(df, x=target_col, y=selected_feature, color=target_col,
+                                     title=f"{selected_feature} Distribution by {target_col}",
+                                     color_discrete_sequence=['#3b82f6', '#10b981'])
+                else:
+                    fig_box = px.box(df, y=selected_feature,
+                                     title=f"Distribution of {selected_feature}",
+                                     color_discrete_sequence=['#3b82f6'])
+                st.plotly_chart(fig_box, use_container_width=True)
+            else:
+                st.info("No numerical features available for box plots.")
+
+        st.info("Tip: In regression, we want to predict a continuous number (like price). In classification, we predict a category (like Benign or Malignant). Now that our data is loaded, let's move on to Step 2: Pre-processing & Feature Engineering.")
+
+        st.markdown("---")
+        with st.expander("Test Your Understanding"):
+            st.markdown("### Conceptual Question")
+            q1 = st.radio(
+                "Why is it important to perform Exploratory Data Analysis (EDA) before modeling?",
+                options=[
+                    "A) To immediately start training the most complex model.",
+                    "B) To understand data distributions, find missing values, and discover relationships between features.",
+                    "C) To deploy the model to production.",
+                    "D) To increase the size of the dataset."
+                ],
+                index=None
+            )
+            if q1:
+                if q1.startswith("B"):
+                    st.success("Correct! EDA helps us understand the shape and quality of our data, which dictates our pre-processing steps.")
+                else:
+                    st.error("Not quite. EDA is about understanding the data before we even think about modeling or deployment.")
