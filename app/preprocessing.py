@@ -197,37 +197,37 @@ df['{selected_num}_scaled'] = scaler.fit_transform(df[['{selected_num}']])
         """)
 
         if st.button("Finalize All Pre-processing Pipeline", type="primary", use_container_width=True):
-        # Auto-apply all transformations for the rest of the app seamlessly
-        final_df = st.session_state["raw_data"].copy()
+            # Auto-apply all transformations for the rest of the app seamlessly
+            final_df = st.session_state["raw_data"].copy()
 
-        # 1. Impute
-        num_cols_f = final_df.select_dtypes(include=['float64', 'int64']).columns.tolist()
-        if target_col in num_cols_f:
-            num_cols_f.remove(target_col)
+            # 1. Impute
+            num_cols_f = final_df.select_dtypes(include=['float64', 'int64']).columns.tolist()
+            if target_col in num_cols_f:
+                num_cols_f.remove(target_col)
 
-        imputer = SimpleImputer(strategy='mean')
-        final_df[num_cols_f] = imputer.fit_transform(final_df[num_cols_f])
+            imputer = SimpleImputer(strategy='mean')
+            final_df[num_cols_f] = imputer.fit_transform(final_df[num_cols_f])
 
-        # 2. Encode Categoricals
-        cat_cols_f = final_df.select_dtypes(include=['object', 'category']).columns.tolist()
-        if target_col in cat_cols_f:
-            cat_cols_f.remove(target_col)
+            # 2. Encode Categoricals
+            cat_cols_f = final_df.select_dtypes(include=['object', 'category']).columns.tolist()
+            if target_col in cat_cols_f:
+                cat_cols_f.remove(target_col)
 
-        if cat_cols_f:
-            final_df = pd.get_dummies(final_df, columns=cat_cols_f, drop_first=True)
+            if cat_cols_f:
+                final_df = pd.get_dummies(final_df, columns=cat_cols_f, drop_first=True)
 
-        # 3. Scale Numericals
-        scaler = StandardScaler()
-        final_df[num_cols_f] = scaler.fit_transform(final_df[num_cols_f])
+            # 3. Scale Numericals
+            scaler = StandardScaler()
+            final_df[num_cols_f] = scaler.fit_transform(final_df[num_cols_f])
 
-        st.session_state["processed_data"] = final_df
-        st.session_state["pipeline_scaler"] = scaler
-        st.session_state["num_cols_pipeline"] = num_cols_f
-        st.session_state["cat_cols_pipeline"] = cat_cols_f
+            st.session_state["processed_data"] = final_df
+            st.session_state["pipeline_scaler"] = scaler
+            st.session_state["num_cols_pipeline"] = num_cols_f
+            st.session_state["cat_cols_pipeline"] = cat_cols_f
 
-        # For deployment, we need to know what dummy columns were created
-        features_after_encode = [c for c in final_df.columns if c != target_col]
-        st.session_state["encoded_columns"] = features_after_encode
+            # For deployment, we need to know what dummy columns were created
+            features_after_encode = [c for c in final_df.columns if c != target_col]
+            st.session_state["encoded_columns"] = features_after_encode
 
             st.success("Pre-processing Pipeline Applied. The cleaned data is now ready for the **Modeling** phase.")
             st.dataframe(final_df.head(), use_container_width=True)
